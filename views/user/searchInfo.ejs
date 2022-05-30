@@ -4,6 +4,8 @@
     <body>
         <%- include('../includes/navigation.ejs') %>
         <main class="bgImg d-flex justify-content-center">
+
+            <!-- function to render and format time -->
             <% function msToTime(duration) { %>
                 <% var milliseconds = Math.floor((duration % 1000) / 100), seconds = Math.floor((duration / 1000) % 60), minutes = Math.floor((duration / (1000 * 60)) % 60), hours = Math.floor((duration / (1000 * 60 * 60)) % 24); %>
                 <% hours = (hours < 10) ? "0" + hours : hours; %>
@@ -31,6 +33,8 @@
                     <div class="card-header d-flex justify-content-center">
                         <h1 class="text-uppercase fw-bolder text-primary mt-3">Tra cứu thông tin giờ làm</h1>
                     </div>
+                    
+                    <!-- show check in - check out of staff -->
                     <div class="m-3">
                         <div>
                             <h3 style="font-weight: bold; color: blue">Thời gian làm việc</h3>
@@ -74,6 +78,8 @@
                             </table>                 
                         </div>
                     </div>
+
+                    <!-- show annual leave -->
                     <div class="m-3">
                         <div>
                             <h3 style="font-weight: bold; color: blue">Thông tin đăng ký nghỉ phép</h3>
@@ -110,6 +116,7 @@
                             </table>
                         </div>
                     </div>
+
                     <div class="m-3">
                         <div>
                             <h3 style="font-weight: bold; color: blue">Thông tin Lương</h3>
@@ -120,6 +127,8 @@
                             <button type="submit" class="btn btn-primary">Send</button>
                         </form>
                     </div>
+
+                    <!-- show total salary after chose month -->
                     <div class="<%= (salary) ? 'showForm' : 'noneForm' %>">
                         <div class="card d-flex justify-content-center" style="width: auto;">
                             <div class="card-body">

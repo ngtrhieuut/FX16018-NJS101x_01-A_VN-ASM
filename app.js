@@ -6,11 +6,10 @@ const mongoose = require('mongoose');
 
 const errorController = require('./controllers/error');
 const User = require('./models/user');
-const checkIn = require('./models/checkIn');
-const checkOut = require('./models/checkOut');
 
 const app = express();
 
+//Use EJS as Template Engine
 app.set('view engine', 'ejs');
 app.set('views', 'views');
 
@@ -37,6 +36,7 @@ mongoose
     'mongodb+srv://ngtrhieuut:Alo113114115@ngtrhieuut.2ktcr.mongodb.net/employeeTracker?retryWrites=true&w=majority'
   )
   .then(result => {
+    //save example user into mongoDB
     User.findOne().then(user => {
       if (!user) {
         const user = new User({

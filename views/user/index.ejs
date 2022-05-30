@@ -20,6 +20,8 @@
                     </div>
                 </div>
             </div>
+
+            <!-- show check in card and hide other card-->
             <div class="card m-3 displayCard" id="<%= (checkInCard) ? 'checkInCard' : '' %>">
                 <div class="card-header d-flex justify-content-center">
                     <h3 class="text-uppercase fw-bolder text-success mt-1">Điểm danh</h3>
@@ -54,6 +56,8 @@
                     <span class="<%= (requiredIn) ? 'showSpan' : 'noneSpan' %> m-2">Bạn cần phải check out</span>
                 </div>
             </div>
+
+            <!-- show check out card and hide other card -->
             <div class="card m-3 displayCard" id="<%= (checkOutCard) ? 'checkOutCard' : '' %>">
                 <div class="card-header d-flex justify-content-center">
                     <h3 class="text-uppercase fw-bolder text-danger mt-1">Kết thúc làm</h3>
@@ -71,6 +75,7 @@
                 </div>
                 <div class=" d-flex justify-content-center">                    
                     <div class="<%= (timerOut) ? 'showSpan2' : 'noneSpan' %> m-2">
+                        <!-- call function to handle time render  -->
                         <% function msToTime(duration) { %>
                             <% var milliseconds = Math.floor((duration % 1000) / 100), seconds = Math.floor((duration / 1000) % 60), minutes = Math.floor((duration / (1000 * 60)) % 60), hours = Math.floor((duration / (1000 * 60 * 60)) % 24); %>
                             <% hours = (hours < 10) ? "0" + hours : hours; %>
@@ -82,7 +87,6 @@
                         <% for (let i = 0 ; i < workPlace ; i++) { %>
                             <%  const today = (new Date()).getDate(); %>
                             <% if ((new Date(checkoutList[i].time)).getDate() === today && (new Date(checkinList[i].time)).getDate() === today) { %>
-                            <!-- <% const countTime = (new Date(checkoutList[i].time) - new Date(checkinList[i].time)); %> -->
                                 <% totalTime = totalTime + ( new Date(checkoutList[i].time) - new Date(checkinList[i].time) ); %>
                             <% } %>
                         <% } %>
@@ -100,7 +104,7 @@
                               </tr>
                             </thead>
                             <tbody>
-                                <!-- Vòng lặp -->
+                                <!-- use for loop to render time check in and check out  -->
                                 <% for (let i = 0; i < workPlace; i++) { %>
                                     <%  const today = (new Date()).getDate(); %>
                                     <% if ((new Date(checkoutList[i].time)).getDate() === today && (new Date(checkinList[i].time)).getDate() === today) { %>
@@ -123,6 +127,8 @@
                     <span class="<%= (requiredOut) ? 'showSpan' : 'noneSpan' %> m-2">Bạn cần phải check in</span>
                 </div>
             </div>
+
+            <!-- show annual leave out card and hide other card -->
             <div class="card m-3 displayCard" id="<%= (aLeaveCard) ? 'aLeaveCard' : '' %>">
                 <div class="card-header d-flex justify-content-center">
                     <h3 class="text-uppercase fw-bolder text-info mt-1">Đăng ký nghỉ phép</h3>
