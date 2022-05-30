@@ -1,0 +1,9 @@
+#checkInCard,
+#checkOutCard,
+#aLeaveCard {
+    display: block !important;
+}
+
+.displayCard {
+    display: none;
+}

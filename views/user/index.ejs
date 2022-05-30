@@ -1,0 +1,166 @@
+<%- include('../includes/head.ejs') %>
+<link rel="stylesheet" href="/css/index.css">
+</head>
+
+<body>
+    <%- include('../includes/navigation.ejs') %>
+    <main class="bgImg d-flex justify-content-center">
+        <div class="container mt-3 mb-3">
+            <div class="card">
+                <div class="card-header d-flex justify-content-center">
+                    <h1 class="text-uppercase fw-bolder text-primary mt-3">XÁC NHẬN NGÀY CÔNG VÀ ĐĂNG KÝ NGHỈ PHÉP</h1>
+                </div>
+                <div class="d-flex justify-content-center">
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex justify-content-center">
+                            <a href="/check-in" type="button" class="btn btn-outline-success btn-lg p-3 fs-4 fw-bolder m-2">Check In</a>
+                            <a href="/check-out" type="button" class="btn btn-outline-danger btn-lg p-3 fs-4 fw-bolder m-2">Check Out</a>
+                            <a href="/annual-leave" type="button" class="btn btn-outline-info btn-lg p-3 fs-4 fw-bolder m-2">Annual Leave</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card m-3 displayCard" id="<%= (checkInCard) ? 'checkInCard' : '' %>">
+                <div class="card-header d-flex justify-content-center">
+                    <h3 class="text-uppercase fw-bolder text-success mt-1">Điểm danh</h3>
+                </div>
+                <div class="card-body">
+                  <h5 class="card-title text-center">Tên nhân viên: <%= props.name %></h5>
+                  <form action="/check-in" method="POST" class="<%= (timerIn) ? 'noneForm' : 'showForm' %>">
+                    <p class="text-center">Vui lòng chọn nơi làm việc để check in</p>
+                    <div class="text-center">
+                      <input type="radio" id="placeChoice1" name="workPlace" value="home">
+                      <label for="placeChoice1">Home</label>
+
+                      <span class="m-3">|</span>
+
+                      <input type="radio" id="placeChoice2" name="workPlace" value="company" checked="checked">
+                      <label for="placeChoice2">Company</label>
+
+                      <span class="m-3">|</span>
+                      
+                      <input type="radio" id="placetChoice3" name="workPlace" value="client">
+                      <label for="placetChoice3">With Client</label>
+
+                      <input type="hidden" value="<%= props._id %>" name="userId">
+                    </div>
+                    <div class="text-center">
+                      <button type="submit" class="btn btn-outline-success btn-lg p-3 fs-4 fw-bolder m-2">Check in</button>
+                    </div>
+                  </form>
+                </div>
+                <div class=" d-flex justify-content-center">
+                    <span class="<%= (timerIn) ? 'showSpan' : 'noneSpan' %> m-2">Bạn đã check in thành công lúc <%= timerIn %>. Địa điểm làm việc <%= workPlace %></span><br>
+                    <span class="<%= (requiredIn) ? 'showSpan' : 'noneSpan' %> m-2">Bạn cần phải check out</span>
+                </div>
+            </div>
+            <div class="card m-3 displayCard" id="<%= (checkOutCard) ? 'checkOutCard' : '' %>">
+                <div class="card-header d-flex justify-content-center">
+                    <h3 class="text-uppercase fw-bolder text-danger mt-1">Kết thúc làm</h3>
+                </div>
+                <div class="card-body">
+                  <h5 class="card-title text-center">Tên nhân viên: <%= props.name %></h5>
+                  <form action="/check-out" method="POST">
+                    <div class="text-center">
+                      <input type="hidden" value="checkOut">
+                    </div>
+                    <div class="text-center">
+                      <button type="submit" class="btn btn-outline-danger btn-lg p-3 fs-4 fw-bolder m-2">Check out</button>
+                    </div>
+                  </form>
+                </div>
+                <div class=" d-flex justify-content-center">                    
+                    <div class="<%= (timerOut) ? 'showSpan2' : 'noneSpan' %> m-2">
+                        <% function msToTime(duration) { %>
+                            <% var milliseconds = Math.floor((duration % 1000) / 100), seconds = Math.floor((duration / 1000) % 60), minutes = Math.floor((duration / (1000 * 60)) % 60), hours = Math.floor((duration / (1000 * 60 * 60)) % 24); %>
+                            <% hours = (hours < 10) ? "0" + hours : hours; %>
+                            <% minutes = (minutes < 10) ? "0" + minutes : minutes; %>
+                            <% seconds = (seconds < 10) ? "0" + seconds : seconds; %>
+                            <% return hours + ":" + minutes + ":" + seconds; %>
+                        <% } %>
+                        <% let totalTime = 0; %>
+                        <% for (let i = 0 ; i < workPlace ; i++) { %>
+                            <%  const today = (new Date()).getDate(); %>
+                            <% if ((new Date(checkoutList[i].time)).getDate() === today && (new Date(checkinList[i].time)).getDate() === today) { %>
+                            <!-- <% const countTime = (new Date(checkoutList[i].time) - new Date(checkinList[i].time)); %> -->
+                                <% totalTime = totalTime + ( new Date(checkoutList[i].time) - new Date(checkinList[i].time) ); %>
+                            <% } %>
+                        <% } %>
+                        <h5 style="font-size: 25px; color: black">Số giờ đã làm hôm nay: <span style="color: red; font-weight: bolder"><%= msToTime(totalTime) %></span></h5>
+                        <h5 style="font-size: 25px; color: black">Chi tiết</h5>
+                        <table class="table">
+                            <thead>
+                              <tr>
+                                <th scope="col" class="text-center">#</th>
+                                <th scope="col" class="text-center">Check In</th>
+                                <th scope="col" class="text-center">Check Out</th>
+                                <th scope="col" class="text-center">Date</th>
+                                <th scope="col" class="text-center">Work Place</th>
+                                <th scope="col" class="text-center">Work Time</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Vòng lặp -->
+                                <% for (let i = 0; i < workPlace; i++) { %>
+                                    <%  const today = (new Date()).getDate(); %>
+                                    <% if ((new Date(checkoutList[i].time)).getDate() === today && (new Date(checkinList[i].time)).getDate() === today) { %>
+                                        <tr>
+                                            <th scope="row"><%= i+1 %></th>
+                                            <td><%= new Date(checkinList[i].time).getHours() %>:<%= new Date(checkinList[i].time).getMinutes() %></td>
+                                            <td><%= new Date(checkoutList[i].time).getHours() %>:<%= new Date(checkoutList[i].time).getMinutes() %></td>
+                                            <td><%= (new Date()).getDate() %>/<%= (new Date()).getMonth() + 1 %>/<%= (new Date()).getFullYear() %></td>
+                                            <td class="text-center text-uppercase"><%= checkinList[i].workLocation %></td>
+                                            <td><%= msToTime(new Date(checkoutList[i].time) - new Date(checkinList[i].time)) %></td>
+                                        </tr>
+                                    <% } %>
+                                <% } %>
+                            </tbody>
+                          </table>
+                    </div>                    
+                </div>
+                <div class=" d-flex justify-content-center">
+                    <span class="<%= (timerOut) ? 'showSpan' : 'noneSpan' %> m-2">Bạn đã check out thành công lúc <%= timerOut %></span>
+                    <span class="<%= (requiredOut) ? 'showSpan' : 'noneSpan' %> m-2">Bạn cần phải check in</span>
+                </div>
+            </div>
+            <div class="card m-3 displayCard" id="<%= (aLeaveCard) ? 'aLeaveCard' : '' %>">
+                <div class="card-header d-flex justify-content-center">
+                    <h3 class="text-uppercase fw-bolder text-info mt-1">Đăng ký nghỉ phép</h3>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title text-center">Tên nhân viên: <%= props.name %></h5>
+                    <form action="/annual-leave" method="POST" style="display: flex; align-items: center; justify-content: center" class="<%= (props.annualLeave == 0) ? 'noneForm' : 'showForm' %>">
+                        <div class="d-flex flex-column" style="width: 40%;">
+                            <label for="startDate" class="text-left text-uppercase text-info mt-2" style="font-weight: bolder">Ngày bắt đầu</label>
+                            <input type="date" id="startDate" name="startDate">
+        
+                            <label for="startHours" class="text-left text-uppercase text-info mt-2" style="font-weight: bolder">Giờ bắt đầu</label>
+                            <input type="time" id="startHours" name="startHours">
+                            
+                            <label for="endDate" class="text-left text-uppercase text-info mt-2" style="font-weight: bolder">Ngày kết thúc</label>
+                            <input type="date" id="endDate" name="endDate">
+                            
+                            <label for="endHours" class="text-left text-uppercase text-info mt-2" style="font-weight: bolder">Giờ kết thúc</label>
+                            <input type="time" id="endHours" name="endHours">
+        
+                            <label for="offComment" class="text-left text-uppercase text-info mt-2" style="font-weight: bolder"> Lý do nghỉ </label>
+                            <input type="text" id="offComment" name="offComment" placeholder="Nghỉ phép năm">                        
+                            
+                            <input type="hidden" value="<%= props._id %>" name="userId">
+
+                            <button type="submit" class="btn btn-outline-info btn-lg p-3 fs-4 fw-bolder m-2">Đăng ký</button>
+                        </div>
+                    </form>
+                    <div class=" d-flex justify-content-center">
+                        <span class="<%= (timerOut) ? 'showSpan' : 'noneSpan' %> m-2">Đăng ký thành công</span><br>
+                        <span class="<%= (requiredOut) ? 'showSpan' : 'noneSpan' %> m-2">Đăng ký thất bại</span>
+                    </div>
+                    <div class=" d-flex justify-content-center">
+                        <span class="showHours">Số ngày phép còn lại: <%= props.annualLeave %></span><br>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script src="/js/index.js"></script>
+<%- include('../includes/end.ejs') %>

@@ -1,0 +1,55 @@
+<%- include('../includes/head.ejs') %>
+    <link rel="stylesheet" href="/css/modal.css">
+    </head>
+
+    <body>
+        <%- include('../includes/navigation.ejs') %>
+        <main class="bgImg d-flex justify-content-center">
+            <div class="container mt-3 mb-3">
+                <div class="card" style="width: 100%">
+                    <div class="card-header d-flex justify-content-center">
+                        <h1 class="text-uppercase fw-bolder text-primary mt-3">THÔNG TIN NHÂN VIÊN</h1>
+                    </div>
+                    <div class="d-flex justify-content-center m-3">
+                        <div class="card mb-3" style="max-width: 100%">
+                            <div class="row g-0">
+                                <div class="col-md-4">
+                                <img src="<%= props.image %>" class="img-fluid rounded-start" alt="selfLogo">
+                                </div>
+                                <div class="col-md-8">
+                                <div class="card-body">
+                                    <h3 class="card-title"><%= props.name %></h3>
+                                    <p class="card-text">Mã nhân viên: <%= props.idStaff %></p>
+                                    <p class="card-text">Ngày/Tháng/Năm sinh: <%= birth %></p>
+                                    <p class="card-text">Ngày vào Công ty: <%= startD %></p>
+                                    <p class="card-text">Hệ số lương: <%= props.salaryScale %></p>
+                                    <p class="card-text">Phòng ban: <%= props.department %></p>
+                                    <p class="card-text">Số ngày phép tồn: <%= props.annualLeave %></p>
+                                    <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#exampleModal" id="myBtn">Đổi ảnh</button>
+                                    <a href="/" type="button" class="btn btn-primary">Về trang chủ</a>
+                                </div>
+                                </div>
+                            </div>
+
+                            <div id="myModal" class="modal">
+                                <div class="d-flex justify-content-center">
+                                    <div class="card" id="subbmitUrl">
+                                        <p><button class="close btn btn-outline-danger" id="closeBtn">
+                                            <i class="fa fa-times-circle-o"></i>
+                                        </button></p>
+                                        <form action="/staff-info/change-image-url" method="POST" class="d-flex justify-content-center">
+                                            <div class="form-group m-3">
+                                              <input type="Url" class="form-control" name="newUrl" placeholder="Nhập url hình ảnh mới">
+                                            </div>
+                                            <button type="submit" class="btn btn-primary m-3">Đổi ảnh</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>                
+            </div>
+        </main>
+        <script src="/js/main.js"></script>
+        <%- include('../includes/end.ejs') %>
