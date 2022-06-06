@@ -15,13 +15,13 @@ const User = require('./models/user');
 const MONGODB_URI = 'mongodb+srv://ngtrhieuut:Alo113114115@ngtrhieuut.2ktcr.mongodb.net/employeeTracker';
 
 const app = express();
-const store = new MongoDBStore({
+const store = new MongoDBStore({ //create store MONGODB use session
   uri: MONGODB_URI,
   collection: 'session'
 });
 const csrfProtection = csrf();
 
-const storage = multer.diskStorage({
+const storage = multer.diskStorage({ //create store for images upload
   destination: function (req, file, cb) {
     cb(null, 'public/images')
   },
@@ -31,14 +31,6 @@ const storage = multer.diskStorage({
   }
 })
 
-const fileFilter = (req, file, cb) => {
-  if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/jpg' || file.mimetype === 'image/png') {
-    cb(null, true);
-  } else {
-    cb(null, false);
-  }
-}
-
 //Use EJS as Template Engine
 app.set('view engine', 'ejs');
 app.set('views', 'views');
@@ -46,16 +38,17 @@ app.set('views', 'views');
 const userRoutes = require('./routes/user');
 const authRoutes = require('./routes/auth');
 
+//use middleware 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(multer({ storage: storage }).single('image'));
 app.use(express.static(path.join(__dirname, 'public')));
-// app.use(express.static(path.join(__dirname, 'images')));
 app.use(
   session({secret: 'my secret', resave: false, saveUninitialized: false, store: store})
 );
 app.use(csrfProtection);
 app.use(flash());
 
+//add global condition for checking manager or staff and checking loggin status
 app.use((req, res, next) => {
   if (!req.session.user) {
     return next();
@@ -92,7 +85,7 @@ mongoose
     MONGODB_URI
   )
   .then(result => {
-    app.listen(process.env.PORT || 8000, '0.0.0.0', () => {
+    app.listen(process.env.PORT || 8000, '0.0.0.0', () => { //deploy heroku with ip '0.0.0.0'
       console.log('Server is running.');
     });
   })

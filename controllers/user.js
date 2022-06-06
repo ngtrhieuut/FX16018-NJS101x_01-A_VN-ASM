@@ -464,7 +464,7 @@ exports.postAnnualLeave = (req, res, next) => {
 exports.postChangeImageUrl = (req, res, next) => {
     const userId = req.user._id;
     const newImage = req.file;
-    const imageUrl = 'images/' + newImage.filename;
+    const imageUrl = 'images/' + newImage.filename; //link to folder and sane file before render new image
 
     if (!newImage) {
         res.status(422).render('user/user-info', {
@@ -494,8 +494,8 @@ exports.postChangeImageUrl = (req, res, next) => {
 
 //render time checking page, because it is a summary page, so need to import a lot of data from models folder
 exports.getTimeChecking = (req, res, next) => {
-    const page = +req.query.page || 1;
-    const item_per_page = 10;
+    const page = +req.query.page || 1; //variable to set pagination
+    const item_per_page = 10; //default 10 line in the view
     let totalItemCheckin;
 
     const userId =req.user._id;
@@ -697,6 +697,7 @@ exports.postTimeChecking = (req, res, next) => {
     });
 };
 
+//re-render when change number of line
 exports.postNumberofLine = (req, res, next) => {
     const page = +req.query.page || 1;
     const item_per_page = req.body.numberofLine;
@@ -878,6 +879,7 @@ exports.postSickChecked = (req, res, next) => {
     });
 };
 
+//render covid check for manager
 exports.getCovitCheckManager = (req, res, next) => {
     User.find({department: req.user.department, isManager: false})
     .then(users => {
@@ -898,10 +900,11 @@ exports.getCovitCheckManager = (req, res, next) => {
     });
 };
 
+//download file when manager request
 exports.getExportFile = (req, res, next) => {
     const fileName = 'covid-staff-infomation.pdf';
     const covidFilePath = path.join('data', 'covidFile', fileName);
-    const pdfDoc = new PDFDocument({ margin: 30, size: 'A4' });
+    const pdfDoc = new PDFDocument({ margin: 30, size: 'A4' }); //use pdfkit-table for creat file after download
     User.find({department: req.user.department, isManager: false})
     .then(users => {
         if (users.length == 0) {
@@ -948,6 +951,7 @@ exports.getExportFile = (req, res, next) => {
     });
 };
 
+//render Work confirmation view for manager
 exports.getWorkConfirmation = (req, res, next) => {
     User.find({department: req.user.department, isManager: false})
     .then(users => {
@@ -966,6 +970,7 @@ exports.getWorkConfirmation = (req, res, next) => {
     });
 };
 
+//render Staff info for view for manager
 exports.getStaffInfomation = (req, res, next) => {
     const userId = req.params.staffId;
 
@@ -1017,6 +1022,7 @@ exports.getStaffInfomation = (req, res, next) => {
     });
 };
 
+//delete request from manager and change status
 exports.postDeleteTime = (req, res, next) => {
     const userId = req.body.staffId;
     const checkInId = req.body.checkIn;
@@ -1093,7 +1099,8 @@ exports.postDeleteTime = (req, res, next) => {
     });
 };
 
-exports.posMonthTime = (req, res, next) => {
+//render with month condition
+exports.postMonthTime = (req, res, next) => {
     const userId = req.body.staffId;
     const monthTime = getNewDate(req.body.time);
 

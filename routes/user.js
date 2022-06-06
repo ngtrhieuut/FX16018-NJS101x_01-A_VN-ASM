@@ -4,6 +4,7 @@ const userController = require('../controllers/user');
 const isAuth = require('../middleware/is-auth');
 const authManager = require('../middleware/manager-auth');
 
+//add middleware for checking loggin status and authority manager
 const router = express.Router();
 
 router.get('/', isAuth, authManager.isStaff, userController.getIndex);
@@ -48,6 +49,6 @@ router.get('/work-confirmation/:staffId', isAuth, authManager.isManager, userCon
 
 router.post('/work-confirmation/:staffId/delete', isAuth, authManager.isManager, userController.postDeleteTime);
 
-router.post('/work-confirmation/:staffId/selectMonth', isAuth, authManager.isManager, userController.posMonthTime);
+router.post('/work-confirmation/:staffId/selectMonth', isAuth, authManager.isManager, userController.postMonthTime);
 
 module.exports = router;
