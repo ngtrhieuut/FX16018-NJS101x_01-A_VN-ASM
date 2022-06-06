@@ -6,23 +6,39 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            <li class="nav-item">
-                <a class="nav-link <%= path === '/' ? 'active' : '' %>" href="/">Điểm danh</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link <%= path === '/staff-info' ? 'active' : '' %>" href="/staff-info">Thông tin</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link <%= path === '/time-checking' ? 'active' : '' %>" href="/time-checking">Tra cứu</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link <%= path === '/covid-check' ? 'active' : '' %>" href="/covid-check">Covid Check</a>
-            </li>
+            <% if (isManager) { %>  
+                <li class="nav-item">
+                    <a class="nav-link <%= path === '/covid-check' ? 'active' : '' %>" href="/covid-check-manager">Covid Check</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <%= path === '/work-confirmation' ? 'active' : '' %>" href="/work-confirmation">Work Confirmation</a>
+                </li>
+            <% } else { %>
+                <li class="nav-item">
+                    <a class="nav-link <%= path === '/' ? 'active' : '' %>" href="/">Điểm danh</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <%= path === '/staff-info' ? 'active' : '' %>" href="/staff-info">Thông tin</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <%= path === '/time-checking' ? 'active' : '' %>" href="/time-checking">Tra cứu</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <%= path === '/covid-check' ? 'active' : '' %>" href="/covid-check">Covid Check</a>
+                </li>    
+            <% } %>
         </ul>
-        <form class="d-flex">
-            <input class="form-control me-2" type="search" placeholder="Tìm thông tin" aria-label="Search">
-            <button class="btn btn-outline-dark bg-light" type="submit">Search</button>
-        </form>
+        <div class="d-flex">
+            <% if (!isLoggIn) { %>
+                <a class="btn btn-outline-dark bg-light" href="/login">Login</a>
+            <% } else { %>
+                <form action="/logout" method="POST">
+                    <input type="hidden" name="logout" value="logout"></input>
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <button class="btn btn-outline-dark bg-light" type="submit">Logout</button>
+                </form>
+            <% } %>
+        </div>
         </div>
     </div>
 </nav>

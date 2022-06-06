@@ -4,7 +4,7 @@
 
 <body>
     <%- include('../includes/navigation.ejs') %>
-    <main class="bgImg d-flex justify-content-center">
+    <main class="d-flex justify-content-center container-login100" style="background-image: url('images/bg-01.jpg');">
         <div class="container mt-3 mb-3">
             <div class="card">
                 <div class="card-header d-flex justify-content-center">
@@ -28,7 +28,7 @@
                 </div>
                 <div class="card-body">
                   <h5 class="card-title text-center">Tên nhân viên: <%= props.name %></h5>
-                  <form action="/check-in" method="POST" class="<%= (timerIn) ? 'noneForm' : 'showForm' %>">
+                  <form action="/check-in" method="POST">
                     <p class="text-center">Vui lòng chọn nơi làm việc để check in</p>
                     <div class="text-center">
                       <input type="radio" id="placeChoice1" name="workPlace" value="home">
@@ -47,13 +47,19 @@
                       <input type="hidden" value="<%= props._id %>" name="userId">
                     </div>
                     <div class="text-center">
-                      <button type="submit" class="btn btn-outline-success btn-lg p-3 fs-4 fw-bolder m-2">Check in</button>
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <button type="submit" class="btn btn-outline-success btn-lg p-3 fs-4 fw-bolder m-2">Check in</button>
                     </div>
                   </form>
                 </div>
                 <div class=" d-flex justify-content-center">
-                    <span class="<%= (timerIn) ? 'showSpan' : 'noneSpan' %> m-2">Bạn đã check in thành công lúc <%= timerIn %>. Địa điểm làm việc <%= workPlace %></span><br>
-                    <span class="<%= (requiredIn) ? 'showSpan' : 'noneSpan' %> m-2">Bạn cần phải check out</span>
+                    <% if (success) { %>
+                        <span class="m-2 text-primary fw-bold"><%= success %></span><br>
+                    <% } %>
+
+                    <% if (error) { %>
+                        <span class="m-2 text-danger fw-bold"><%= error %></span>
+                    <% } %> 
                 </div>
             </div>
 
@@ -69,12 +75,13 @@
                       <input type="hidden" value="checkOut">
                     </div>
                     <div class="text-center">
-                      <button type="submit" class="btn btn-outline-danger btn-lg p-3 fs-4 fw-bolder m-2">Check out</button>
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <button type="submit" class="btn btn-outline-danger btn-lg p-3 fs-4 fw-bolder m-2">Check out</button>
                     </div>
                   </form>
                 </div>
                 <div class=" d-flex justify-content-center">                    
-                    <div class="<%= (timerOut) ? 'showSpan2' : 'noneSpan' %> m-2">
+                    <div class="<%= (success) ? 'showSpan2' : 'noneSpan' %> m-2">
                         <!-- call function to handle time render  -->
                         <% function msToTime(duration) { %>
                             <% var milliseconds = Math.floor((duration % 1000) / 100), seconds = Math.floor((duration / 1000) % 60), minutes = Math.floor((duration / (1000 * 60)) % 60), hours = Math.floor((duration / (1000 * 60 * 60)) % 24); %>
@@ -84,7 +91,7 @@
                             <% return hours + ":" + minutes + ":" + seconds; %>
                         <% } %>
                         <% let totalTime = 0; %>
-                        <% for (let i = 0 ; i < workPlace ; i++) { %>
+                        <% for (let i = 0 ; i < length ; i++) { %>
                             <%  const today = (new Date()).getDate(); %>
                             <% if ((new Date(checkoutList[i].time)).getDate() === today && (new Date(checkinList[i].time)).getDate() === today) { %>
                                 <% totalTime = totalTime + ( new Date(checkoutList[i].time) - new Date(checkinList[i].time) ); %>
@@ -105,7 +112,7 @@
                             </thead>
                             <tbody>
                                 <!-- use for loop to render time check in and check out  -->
-                                <% for (let i = 0; i < workPlace; i++) { %>
+                                <% for (let i = 0; i < length ; i++) { %>
                                     <%  const today = (new Date()).getDate(); %>
                                     <% if ((new Date(checkoutList[i].time)).getDate() === today && (new Date(checkinList[i].time)).getDate() === today) { %>
                                         <tr>
@@ -123,8 +130,8 @@
                     </div>                    
                 </div>
                 <div class=" d-flex justify-content-center">
-                    <span class="<%= (timerOut) ? 'showSpan' : 'noneSpan' %> m-2">Bạn đã check out thành công lúc <%= timerOut %></span>
-                    <span class="<%= (requiredOut) ? 'showSpan' : 'noneSpan' %> m-2">Bạn cần phải check in</span>
+                    <span class="<%= (success) ? 'showSpan' : 'noneSpan' %> m-2 text-primary fw-bold"><%= success %></span><br>
+                    <span class="<%= (error) ? 'showSpan' : 'noneSpan' %> m-2 text-danger fw-bold"><%= error %></span>
                 </div>
             </div>
 
@@ -153,13 +160,14 @@
                             <input type="text" id="offComment" name="offComment" placeholder="Nghỉ phép năm">                        
                             
                             <input type="hidden" value="<%= props._id %>" name="userId">
-
+                            
+                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                             <button type="submit" class="btn btn-outline-info btn-lg p-3 fs-4 fw-bolder m-2">Đăng ký</button>
                         </div>
                     </form>
                     <div class=" d-flex justify-content-center">
-                        <span class="<%= (timerOut) ? 'showSpan' : 'noneSpan' %> m-2">Đăng ký thành công</span><br>
-                        <span class="<%= (requiredOut) ? 'showSpan' : 'noneSpan' %> m-2">Đăng ký thất bại</span>
+                        <span class="<%= (success) ? 'showSpan' : 'noneSpan' %> m-2 text-primary fw-bold"><%= success %></span><br>
+                        <span class="<%= (error) ? 'showSpan' : 'noneSpan' %> m-2 text-danger fw-bold"><%= error %></span>
                     </div>
                     <div class=" d-flex justify-content-center">
                         <span class="showHours">Số ngày phép còn lại: <%= props.annualLeave %></span><br>

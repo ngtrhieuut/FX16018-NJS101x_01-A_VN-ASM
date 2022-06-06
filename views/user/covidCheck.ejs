@@ -4,93 +4,142 @@
 
 <body>
     <%- include('../includes/navigation.ejs') %>
-    <main class="bgImg d-flex justify-content-center">
-        <div class="container mt-3 mb-3">
-            <div class="card">
-                <div class="card-header d-flex justify-content-center">
-                    <h1 class="text-uppercase fw-bolder text-primary mt-3">KHAI BÁO THÔNG TIN COVID</h1>
-                </div>
-                <div class="d-flex justify-content-center row container">
-                    <div class="card col-lg-8 m-2">
-                        <div class="card-header d-flex justify-content-center">
-                            <h4 class="text-uppercase text-primary mt-3">Khai báo thân nhiệt</h4>
-                        </div>
-                        <form action="/covid-check/temperature" method="POST" class="p-2 box">
-                            <p>Khai báo nhiệt độ cơ thể hiện tại</p>
-                            <div class="d-flex justify-content-center">
-                                <input type="number" id="temperature" name="temperature" placeholder="37, 36.5, ..." step=".01">
-                                <label for="temperature">&deg;C</label>
-                            </div>
-                            <div class=" d-flex justify-content-center">
-                                <button type="submit" class="btn btn-outline-warning btn-lg fw-bolder mt-2">
-                                    Khai báo
-                                </button>
-                            </div>                            
-                        </form>
-                        <div class="<%= (temper) ? 'showSpan2' : 'noneSpan' %>">
-                            <h6 class="text-center">Khai báo thành công<br>Nhiệt độ của bạn là <%= temper %>&deg;C</h6>               
-                        </div>
+    <main class="d-flex justify-content-center container-login100" style="background-image: url('images/bg-01.jpg');">
+        <% if (!isManager) { %>
+            <div class="container mt-3 mb-3">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-center">
+                        <h1 class="text-uppercase fw-bolder text-primary mt-3">KHAI BÁO THÔNG TIN COVID</h1>
                     </div>
-                    <div class="card col-lg-8 m-2">
-                        <div class="card-header d-flex justify-content-center">
-                            <h4 class="text-uppercase text-primary mt-3">Khai báo thông tin vaccine</h4>
+                    <div class="d-flex justify-content-center row container">
+                        <div class="card col-lg-8 m-2">
+                            <div class="card-header d-flex justify-content-center">
+                                <h4 class="text-uppercase text-primary mt-3">Khai báo thân nhiệt</h4>
+                            </div>
+                            <form action="/covid-check/temperature" method="POST" class="p-2 box">
+                                <p>Khai báo nhiệt độ cơ thể hiện tại</p>
+                                <div class="d-flex justify-content-center">
+                                    <input type="number" id="temperature" name="temperature" placeholder="37, 36.5, ..." step=".01">
+                                    <label for="temperature">&deg;C</label>
+                                </div>
+                                <div class=" d-flex justify-content-center">
+                                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                    <button type="submit" class="btn btn-outline-warning btn-lg fw-bolder mt-2">
+                                        Khai báo
+                                    </button>
+                                </div>                            
+                            </form>
+                            <div class="<%= (temper) ? 'showSpan2' : 'noneSpan' %>">
+                                <h6 class="text-center">Khai báo thành công<br>Nhiệt độ của bạn là <%= temper %>&deg;C</h6>               
+                            </div>
                         </div>
-                        <form action="/covid-check/vaccinated" method="POST" class="p-2 box">
-                            <p>Khai báo thông tin vaccine</p>
-                            <div class="d-flex flex-column">
-                                <label for="vaccinated">Mũi tiêm</label>
-                                <input type="number" id="vaccinated" name="vaccinated" placeholder="1, 2, 3, 4">
-                                
-                                <label for="vaccineName">Loại Vaccine</label>
-                                <select id="vaccineName" name="vaccineName">
-                                    <option value="Vaccine Abdala">Vaccine Abdala</option>
-                                    <option value="Vaccine BBIBP của Sinopharm">Vaccine BBIBP của Sinopharm</option>
-                                    <option value="Vaccine BioNTech, Pfizer">Vaccine BioNTech, Pfizer</option>
-                                    <option value="Vaccine Covaxin">Vaccine Covaxin</option>
-                                    <option value="Vaccine Johnson & Johnson">Vaccine Johnson & Johnson</option>
-                                    <option value="Vaccine Moderna">Vaccine Moderna</option>
-                                    <option value="Vaccine Oxford, AstraZeneca">Vaccine Oxford, AstraZeneca</option>
-                                    <option value="Vaccine Sputnik V">Vaccine Sputnik V</option>
-                                    <option value="other">Vaccine Khác</option>
-                                </select>
+                        <div class="card col-lg-8 m-2">
+                            <div class="card-header d-flex justify-content-center">
+                                <h4 class="text-uppercase text-primary mt-3">Khai báo thông tin vaccine</h4>
+                            </div>
+                            <form action="/covid-check/vaccinated" method="POST" class="p-2 box">
+                                <p>Khai báo thông tin vaccine</p>
+                                <div class="d-flex flex-column">
+                                    <label for="vaccinated">Mũi tiêm</label>
+                                    <input type="number" id="vaccinated" name="vaccinated" placeholder="1, 2, 3, 4">
+                                    
+                                    <label for="vaccineName">Loại Vaccine</label>
+                                    <select id="vaccineName" name="vaccineName">
+                                        <option value="Vaccine Abdala">Vaccine Abdala</option>
+                                        <option value="Vaccine BBIBP của Sinopharm">Vaccine BBIBP của Sinopharm</option>
+                                        <option value="Vaccine BioNTech, Pfizer">Vaccine BioNTech, Pfizer</option>
+                                        <option value="Vaccine Covaxin">Vaccine Covaxin</option>
+                                        <option value="Vaccine Johnson & Johnson">Vaccine Johnson & Johnson</option>
+                                        <option value="Vaccine Moderna">Vaccine Moderna</option>
+                                        <option value="Vaccine Oxford, AstraZeneca">Vaccine Oxford, AstraZeneca</option>
+                                        <option value="Vaccine Sputnik V">Vaccine Sputnik V</option>
+                                        <option value="other">Vaccine Khác</option>
+                                    </select>
 
-                                <label for="vaccineDate">Ngày tiêm</label>
-                                <input type="date" id="vaccineDate" name="vaccineDate">
+                                    <label for="vaccineDate">Ngày tiêm</label>
+                                    <input type="date" id="vaccineDate" name="vaccineDate">
+                                </div>
+                                <div class=" d-flex justify-content-center">
+                                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                    <button type="submit" class="btn btn-outline-warning btn-lg fw-bolder mt-2">
+                                        Khai báo
+                                    </button>
+                                </div>
+                            </form>
+                            <div class="<%= (vaccine) ? 'showSpan2' : 'noneSpan' %>">
+                                <h6 class="text-center">Khai báo thành công</h6>               
                             </div>
-                            <div class=" d-flex justify-content-center">
-                                <button type="submit" class="btn btn-outline-warning btn-lg fw-bolder mt-2">
-                                    Khai báo
-                                </button>
-                            </div>
-                        </form>
-                        <div class="<%= (vaccine) ? 'showSpan2' : 'noneSpan' %>">
-                            <h6 class="text-center">Khai báo thành công</h6>               
                         </div>
-                    </div>
-                    <div class="card col-lg-8 m-2">
-                        <div class="card-header d-flex justify-content-center">
-                            <h4 class="text-uppercase text-primary mt-3">Đăng ký thông tin Covid</h4>
-                        </div>
-                        <form action="/covid-check/sick-checked" method="POST" class="p-2 box">
-                            <p>Bạn đã từng dương tính với covid-19?</p>
-                            <div class="d-flex justify-content-center">
-                                <input type="radio" name="sicked" value="true" class="m-2"> Đã dương tính
-                                <span class="m-3"></span>
-                                <input type="radio" name="sicked" value="false" class="m-2"> Chưa dương tính
+                        <div class="card col-lg-8 m-2">
+                            <div class="card-header d-flex justify-content-center">
+                                <h4 class="text-uppercase text-primary mt-3">Đăng ký thông tin Covid</h4>
                             </div>
-                            <div class=" d-flex justify-content-center">
-                                <button type="submit" class="btn btn-outline-warning btn-lg fw-bolder mt-2">
-                                    Đăng ký
-                                </button>
+                            <form action="/covid-check/sick-checked" method="POST" class="p-2 box">
+                                <p>Bạn đã từng dương tính với covid-19?</p>
+                                <div class="d-flex justify-content-center">
+                                    <input type="radio" name="sicked" value="true" class="m-2"> Đã dương tính
+                                    <span class="m-3"></span>
+                                    <input type="radio" name="sicked" value="false" class="m-2"> Chưa dương tính
+                                </div>
+                                <div class=" d-flex justify-content-center">
+                                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                    <button type="submit" class="btn btn-outline-warning btn-lg fw-bolder mt-2">
+                                        Đăng ký
+                                    </button>
+                                </div>
+                            </form>
+                            <div class="<%= (sick) ? 'showSpan2' : 'noneSpan' %>">
+                                <h6 class="text-center">Khai báo thành công</h6>               
                             </div>
-                        </form>
-                        <div class="<%= (sick) ? 'showSpan2' : 'noneSpan' %>">
-                            <h6 class="text-center">Khai báo thành công</h6>               
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+        <% } else { %>
+            <div class="container mt-3 mb-3">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-center">
+                        <h1 class="text-uppercase fw-bolder text-primary mt-3">THÔNG TIN COVID CỦA NHÂN VIÊN</h1>
+                    </div>
+                    <div class="d-flex justify-content-center">
+                        <table class="table">
+                            <thead>
+                              <tr>
+                                <th scope="col">Tên nhân viên</th>
+                                <th scope="col" class="text-center">Mũi tiêm</th>
+                                <th scope="col">Tên Vaccine</th>
+                                <th scope="col" class="text-center">Ngày tiêm</th>
+                                <th scope="col">Tình trạng</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Vòng lặp -->
+                                <% for (let i = 0; i < propsLength; i++) { %>
+                                    <% for (let j = 0 ; j < props[i].vaccinated.length ; j++) { %>
+                                        <tr>
+                                            <th scope="row"><%= props[i].name %></th>
+                                            <td class="text-center"><%= props[i].vaccinated[j].count %></td>
+                                            <td><%= props[i].vaccinated[j].vaccinateName %></td>
+                                            <td class="text-center"><%= new Date(props[i].vaccinated[j].time).getDate() %>-<%= new Date(props[i].vaccinated[j].time).getMonth() + 1 %>-<%= new Date(props[i].vaccinated[j].time).getFullYear() %></td>
+                                            <% if (props[i].covidCheck) { %>
+                                                <td>Đã nhiễm covid</td>
+                                            <% } else { %>
+                                                <td>Chưa nhiễm covid</td>
+                                            <% } %>
+                                        </tr>
+                                    <% } %>
+                                <% } %>
+                            </tbody>
+                        </table>                 
+                    </div>
+                    <div class="d-flex justify-content-center">
+                        <a href="/export-covid-file" class="btn btn-outline-primary btn-lg fw-bolder m-2 ">
+                            Xuất file
+                        </a>
+                    </div>
+                </div>
+            </div>
+        <% } %>
     </main>
     <script src="/js/index.js"></script>
 <%- include('../includes/end.ejs') %>

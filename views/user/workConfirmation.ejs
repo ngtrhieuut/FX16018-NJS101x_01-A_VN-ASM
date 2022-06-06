@@ -1,0 +1,21 @@
+<%- include('../includes/head.ejs') %>
+</head>
+
+<body>
+    <%- include('../includes/navigation.ejs') %>
+    <main class="d-flex justify-content-center container-login100" style="background-image: url('images/bg-01.jpg');">
+        <div class="container mt-3 mb-3">
+            <div class="card" style="width: 100%">
+                <div class="card-header d-flex justify-content-center">
+                    <h1 class="text-uppercase fw-bolder text-primary mt-3">xác nhận thông tin nhân viên</h1>
+                </div>
+                <div class="d-flex justify-content-center m-2">
+                    <h5 class="m-3">Chọn nhân viên </h5>
+                    <% for (let a = 0; a < propsLength; a++) { %>
+                            <a class="btn-outline-primary btn btn-lg m-2" href="work-confirmation/<%= props[a]._id %>"><%= props[a].name %></a>
+                    <% } %>
+                </div>
+            </div>                
+        </div>
+    </main>
+    <%- include('../includes/end.ejs') %>

@@ -47,8 +47,15 @@ const userSchema = new Schema({
   vaccinated: [{count: {type: Number}, vaccinateName: {type: String}, time: {type: Date}}],
   covidCheck: {
     type: Boolean,
+  },
+  isManager: {
+    type: Boolean,
+    required: true
+  },
+  password: {
+    type: String,
+    required: true
   }
-
 });
 
 module.exports = mongoose.model('User', userSchema);

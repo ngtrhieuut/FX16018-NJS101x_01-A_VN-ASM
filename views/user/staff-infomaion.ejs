@@ -1,0 +1,171 @@
+<%- include('../includes/head.ejs') %>
+<link rel="stylesheet" href="css/modal2.css">
+    </head>
+
+    <body>
+        <%- include('../includes/navigation.ejs') %>
+        <main class="d-flex justify-content-center container-login100" style="background-image: url('images/bg-01.jpg');">
+
+            <!-- function to render and format time -->
+            <% function msToTime(duration) { %>
+                <% var milliseconds = Math.floor((duration % 1000) / 100), seconds = Math.floor((duration / 1000) % 60), minutes = Math.floor((duration / (1000 * 60)) % 60), hours = Math.floor((duration / (1000 * 60 * 60)) % 24); %>
+                <% hours = (hours < 10) ? "0" + hours : hours; %>
+                <% minutes = (minutes < 10) ? "0" + minutes : minutes; %>
+                <% seconds = (seconds < 10) ? "0" + seconds : seconds; %>
+                <% return hours + ":" + minutes + ":" + seconds; %>
+            <% } %>
+            <%  const leaveHours = (a) => { %>
+                <% const hours = a.split(':'); %>
+                <% const seconds =  hours[0]*3600 + hours[1]*60; %>
+                <% return seconds %>
+            <% } %>
+        
+            <% const timeUsed = (startTime, endTime) => { %>
+                <% const difference = (leaveHours(endTime) - leaveHours(startTime))/28800 %>
+                <% return difference %>
+            <% } %>
+        
+            <% const timeRemaining = (timeUsed1, timeUsed2, dayUsed) => { %>
+                <% const remaining = (timeUsed1 + timeUsed2 + dayUsed).toFixed(2); %>
+                <% return remaining %>
+            <% } %>
+            <div class="container mt-3 mb-3">
+                <div class="card" style="width: 100%">
+                    <div class="card-header d-flex justify-content-center">
+                        <h1 class="text-uppercase fw-bolder text-primary mt-3">Tra cứu thông tin giờ làm</h1>
+                    </div>
+                    
+                    <!-- show check in - check out of staff -->
+                    <div class="m-3">
+                        <div>
+                            <h3 style="font-weight: bold; color: blue">Thời gian làm việc</h3>
+                        </div>
+                        <div class="d-flex justify-content-center">            
+                            <table class="table">
+                                <thead>
+                                  <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col">Check In</th>
+                                    <th scope="col">Check Out</th>
+                                    <th scope="col">Work Time</th>
+                                    <th scope="col">Over Time</th>
+                                    <th scope="col">Date</th>
+                                    <th scope="col" class="text-center">Work Place</th>
+                                    <th scope="col"></th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Vòng lặp -->
+                                    <% for (let i = 0; i < length; i++) { %>
+                                        <tr>
+                                            <th scope="row"><%= i+1 %></th>
+                                            <td><%= new Date(checkinList[i].time).getHours() %>:<%= new Date(checkinList[i].time).getMinutes() %>:<%= new Date(checkinList[i].time).getSeconds() %></td>
+                                            <% if (checkoutList[i]._id) { %>
+                                                <td><%= new Date(checkoutList[i].time).getHours() %>:<%= new Date(checkoutList[i].time).getMinutes() %>:<%= new Date(checkoutList[i].time).getSeconds() %></td>
+                                                <td><%= msToTime(new Date(checkoutList[i].time) - new Date(checkinList[i].time)) %></td>
+                                            <% } else { %>
+                                                <td>--</td>
+                                                <td>Chưa kết thúc</td>
+                                            <% } %>
+                                            <% if ((new Date(checkoutList[i].time) - new Date(checkinList[i].time)) >= 28800000) { %>
+                                                <td><%= msToTime(new Date(checkoutList[i].time) - new Date(checkinList[i].time) - 28800000) %></td>
+                                            <% } else { %>
+                                                <td>--</td>
+                                            <% } %>
+                                            <td><%= new Date(checkinList[i].time).getDate() %>/<%= new Date(checkinList[i].time).getMonth() + 1 %>/<%= new Date(checkinList[i].time).getFullYear() %></td>
+                                            <td class="text-center text-uppercase"><%= checkinList[i].workLocation %></td>
+                                            <td><button type="button" class="btn" id="<%= checkinList[i]._id %>"><span aria-hidden="true">&times;</span></button></td>                                
+                                        </tr>
+                                        <!-- The Modal -->
+                                        <div id="<%= checkoutList[i]._id %>" class="modal mt-5" style="width:40%; margin-left: 25%">
+
+                                            <!-- Modal content -->
+                                            <div class="modal-content">
+                                                <form action="/work-confirmation/<%= props._id %>/delete" method="POST" class="m-2">
+                                                    <p>Bạn có muốn xóa thông tin check in - check out</p>
+                                                    <input type="hidden" name="staffId" value="<%= props._id %>">
+                                                    <input type="hidden" name="checkIn" value="<%= checkinList[i]._id %>">
+                                                    <input type="hidden" name="checkOut" value="<%= checkoutList[i]._id %>">
+                                                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                                </form>
+                                            </div>
+                                        
+                                        </div>
+                                        
+                                        <script>
+                                            // Get the modal
+                                            var modal = document.getElementById("<%= checkoutList[i]._id %>");                                            
+                                            // Get the button that opens the modal
+                                            var btn = document.getElementById("<%= checkinList[i]._id %>");
+                                            // When the user clicks the button, open the modal 
+                                            btn.onclick = function() {
+                                              modal.style.display = "block";
+                                            }
+                                            // When the user clicks anywhere outside of the modal, close it
+                                            window.onclick = function(event) {
+                                              if (event.target == modal) {
+                                                modal.style.display = "none";
+                                              }
+                                            }
+                                            </script>
+                                    <% } %>
+                                </tbody>
+                            </table>                 
+                        </div>
+                    </div>
+
+                    <!-- show annual leave -->
+                    <div class="m-3">
+                        <div>
+                            <h3 style="font-weight: bold; color: blue">Thông tin đăng ký nghỉ phép</h3>
+                        </div>
+                            <form method="POST" action="/work-confirmation/<%= props._id %>/selectMonth">
+                                <label for="time">Chọn tháng </label>
+                                <input type="month" id="time" name="time">
+                                <input type="hidden" name="staffId" value="<%= props._id %>">
+                                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                <button type="submit" class="btn btn-outline-success btn-lg fs-6 fw-bold m-2">Kiểm tra</button>
+                            </form>
+                        <% if (month) { %>
+                        <div class="d-flex justify-content-center">
+                            <table class="table">
+                                <thead>
+                                  <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col">Ngày bắt đầu</th>
+                                    <th scope="col">Giờ bắt đầu</th>
+                                    <th scope="col">Ngày kết thúc</th>
+                                    <th scope="col">Giờ kết thúc</th>
+                                    <th scope="col">Tổng ngày phép</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Vòng lặp -->
+                                    <% for (let i = 0; i < annualLeave.length; i++) { %>
+                                        <% if (new Date(annualLeave[i].endDate).getMonth() == month && new Date(annualLeave[i].endDate).getFullYear() == salary) { %>
+                                            <tr>
+                                                <th scope="row"><%= i+1 %></th>
+                                                <td><%= new Date(annualLeave[i].startDate).getDate() %>/<%= new Date(annualLeave[i].startDate).getMonth() + 1 %>/<%= new Date(annualLeave[i].startDate).getFullYear() %></td>
+                                                <td><%= annualLeave[i].startHours %></td>
+                                                <td><%= new Date(annualLeave[i].endDate).getDate() %>/<%= new Date(annualLeave[i].endDate).getMonth() + 1 %>/<%= new Date(annualLeave[i].endDate).getFullYear() %></td>
+                                                <td><%= annualLeave[i].endHours %></td>
+                                                <% if (new Date(annualLeave[i].endDate) > new Date(annualLeave[i].startDate)) { %>
+                                                    <td><%= timeRemaining(timeUsed(annualLeave[i].startHours, '17:00'), timeUsed('9:00', annualLeave[i].endHours), (new Date(annualLeave[i].endDate) - new Date(annualLeave[i].startDate))/86400000 - 1) %></td>
+                                                <% } else { %>
+                                                    <td><%= timeUsed(annualLeave[i].startHours, annualLeave[i].endHours).toFixed(2) %></td>
+                                                <% } %>
+                                            </tr>
+                                        <% } %>
+                                    <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+                        <% } else { %>
+                            <div>Pleave select month</div>
+                        <% } %>
+                    </div>
+                </div>                
+            </div>
+        </main>
+        <%- include('../includes/end.ejs') %>

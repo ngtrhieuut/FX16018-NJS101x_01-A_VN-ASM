@@ -3,7 +3,7 @@
 
     <body>
         <%- include('../includes/navigation.ejs') %>
-        <main class="bgImg d-flex justify-content-center">
+        <main class="d-flex justify-content-center container-login100" style="background-image: url('images/bg-01.jpg');">
 
             <!-- function to render and format time -->
             <% function msToTime(duration) { %>
@@ -38,6 +38,29 @@
                     <div class="m-3">
                         <div>
                             <h3 style="font-weight: bold; color: blue">Thời gian làm việc</h3>
+                        </div>
+                        <div class="d-flex justify-content-center">
+                            <form action="/time-checking/numberofLine" method="POST">
+                                <h6>Số dòng hiển thị</h6>
+                                <div class="text-center">
+                                    <input type="radio" id="placeChoice1" name="numberofLine" value="10">
+                                    <label for="placeChoice1">10</label>
+              
+                                    <span class="m-3">|</span>
+              
+                                    <input type="radio" id="placeChoice2" name="numberofLine" value="15">
+                                    <label for="placeChoice2">15</label>
+              
+                                    <span class="m-3">|</span>
+                                    
+                                    <input type="radio" id="placetChoice3" name="numberofLine" value="20">
+                                    <label for="placetChoice3">20</label>
+              
+                                    <input type="hidden" value="<%= props._id %>" name="userId">
+                                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                    <button type="submit" class="btn btn-outline-success btn-lg fs-6 m-2">Hiển thị</button>
+                                </div>
+                            </form>
                         </div>
                         <div class="d-flex justify-content-center">            
                             <table class="table">
@@ -77,6 +100,21 @@
                                 </tbody>
                             </table>                 
                         </div>
+                        <section class="pagination d-flex justify-content-center">
+                            <% if (currentPage !== 1 && previousPage !== 1) { %>
+                                <a href="/time-checking/?page=1" class="btn btn-outline-primary m-1">1</a>
+                            <% } %>
+                            <% if (hasPreviousPage) { %>
+                                <a href="/time-checking/?page=<%= previousPage %>" class="btn btn-outline-primary m-1"><%= previousPage %></a>
+                            <% } %>
+                            <a href="/time-checking/?page=<%= currentPage %>" class="btn btn-outline-primary m-1 active"><%= currentPage %></a>
+                            <% if (hasNextPage) { %>
+                                <a href="/time-checking/?page=<%= nextPage %>" class="btn btn-outline-primary m-1"><%= nextPage %></a>
+                            <% } %>
+                            <% if (lastPage !== currentPage && nextPage !== lastPage) { %>
+                            <a href="/time-checking/?page=<%= lastPage %>" class="btn btn-outline-primary m-1"><%= lastPage %></a>
+                            <% } %>
+                        </section>
                     </div>
 
                     <!-- show annual leave -->
@@ -119,11 +157,18 @@
 
                     <div class="m-3">
                         <div>
+                            <h3 style="font-weight: bold; color: blue">Tên quản lý: <%= manager %></h3>
+                        </div>
+                    </div>
+
+                    <div class="m-3">
+                        <div>
                             <h3 style="font-weight: bold; color: blue">Thông tin Lương</h3>
                         </div>
                         <form action="/time-checking" method="POST">
                             <label for="time">Chọn tháng </label>
                             <input type="month" id="time" name="time">
+                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                             <button type="submit" class="btn btn-primary">Send</button>
                         </form>
                     </div>

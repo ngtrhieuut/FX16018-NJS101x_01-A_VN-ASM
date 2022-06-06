@@ -1,10 +1,15 @@
+const fs = require('fs');
+const path = require('path');
+const date = require('s-date');
+const PDFDocument = require('pdfkit-table');
+const mongoose = require('mongoose');
+
 const User = require('../models/user');
 const checkOut = require('../models/checkOut');
 const checkIn = require('../models/checkIn');
 const AnnualLeave = require('../models/annualLeave');
 const Temperature = require('../models/temperature');
 
-const { ObjectId } = require('mongodb');
 
 //create functions to simplify processing
 //leaveHours function convert string to seconds
@@ -51,129 +56,91 @@ const getNewDate = (date) => {
 
 //render home page
 exports.getIndex = (req, res, next) => {
-    User.find()
-      .then(user => {
-        res.render('user/index', {
-          props: user[0],
-          pageTitle: 'User Controll Center',
-          path: '/',
-          timerIn: undefined,
-          workPlace: undefined,
-          requiredIn: undefined,
-          timerOut: undefined,
-          requiredOut: undefined,
-          checkInCard: undefined,
-          checkOutCard: undefined,
-          aLeaveCard: undefined,
-          checkinList: undefined,
-          checkoutList: undefined
-        });
-      })
-      .catch(err => {
-        console.log(err);
-      });
+    res.render('user/index', {
+        props: req.user,
+        pageTitle: 'User Controll Center',
+        path: '/',
+        success: undefined,
+        error: undefined,
+        length: undefined,
+        checkInCard: undefined,
+        checkOutCard: undefined,
+        aLeaveCard: undefined,
+        checkinList: undefined,
+        checkoutList: undefined
+    });
 };
 
 //render staff info page
 exports.getStaffInfo = (req, res, next) => {
-    User.find()
-    .then(user => {
-      const date = require('s-date');
-      const myBirthday = new Date(user[0].doB);
-      const startDate = new Date(user[0].startDate);
-      res.render('user/user-info', {
-        props: user[0],
+    const date = require('s-date');
+    const myBirthday = new Date(req.user.doB);
+    const startDate = new Date(req.user.startDate);
+    res.render('user/user-info', {
+        props: req.user,
         birth: date('{mm}/{dd}/{yyyy}', myBirthday),//use s-date to format time for render view
         startD: date('{mm}/{dd}/{yyyy}', startDate),
         pageTitle: 'User Infomation',
-        path: '/staff-info'
-      });
-    })
-    .catch(err => {
-      console.log(err);
+        path: '/staff-info',
+        errorMessage: undefined
     });
 };
 
 //render home page with check in card
 exports.getCheckIn = (req, res, next) => {
-    User.find()
-    .then(user => {
-      res.render('user/index', {
-        props: user[0],
+    res.render('user/index', {
+        props: req.user,
         pageTitle: 'Staff - Check In',
         path: '/',
-        timerIn: undefined,
-        workPlace: undefined,
-        requiredIn: undefined,
-        timerOut: undefined,
-        requiredOut: undefined,
+        success: undefined,
+        error: undefined,
+        length: undefined,
         checkInCard: true,
         checkOutCard: undefined,
         aLeaveCard: undefined,
         checkinList: undefined,
         checkoutList: undefined
-      });
-    })
-    .catch(err => {
-      console.log(err);
     });
 };
 
 //render home page with check out card
 exports.getCheckOut = (req, res, next) => {
-    User.find()
-    .then(user => {
-      res.render('user/index', {
-        props: user[0],
+    res.render('user/index', {
+        props: req.user,
         pageTitle: 'Staff - Check Out',
         path: '/',
-        timerIn: undefined,
-        workPlace: undefined,
-        requiredIn: undefined,
-        timerOut: undefined,
-        requiredOut: undefined,
+        success: undefined,
+        error: undefined,
+        length: undefined,
         checkInCard: undefined,
         checkOutCard: true,
         aLeaveCard: undefined,
         checkinList: undefined,
         checkoutList: undefined
-      });
-    })
-    .catch(err => {
-      console.log(err);
     });
+
 };
 
 //render home page with annual leave card
 exports.getAnnualLeave = (req, res, next) => {
-    User.find()
-    .then(user => {
-      res.render('user/index', {
-        props: user[0],
+    res.render('user/index', {
+        props: req.user,
         pageTitle: 'Staff - Annual Leave',
         path: '/',
-        timerIn: undefined,
-        workPlace: undefined,
-        requiredIn: undefined,
-        timerOut: undefined,
-        requiredOut: undefined,
+        success: undefined,
+        error: undefined,
+        length: undefined,
         checkInCard: undefined,
         checkOutCard: undefined,
         aLeaveCard: true,
         checkinList: undefined,
         checkoutList: undefined
-      });
-    })
-    .catch(err => {
-      console.log(err);
     });
 };
 
 //render home page after post form request
 exports.postCheckIn = (req, res, next) => {
     const workPlace = req.body.workPlace;
-    const userId = req.body.userId;
-    const date = require('s-date');
     const timeCheckin = new Date();
 
     //checking the first value when there is no check in check out operation
@@ -182,28 +149,27 @@ exports.postCheckIn = (req, res, next) => {
         ? false :req.user.status[req.user.status.length - 1].status
     if (!checkRequest) {
         const CheckIn = new checkIn({
-            userId: userId,
+            userId: req.user._id,
             time: timeCheckin,
             workLocation: workPlace
         });
         CheckIn.save(); //save to database
-    
-        User.findById(userId)
+       
+        User.findById(req.user._id)
         .then(user => {
             user.status = [...user.status, {status: true}]
             return user.save()
         })
         .then(result => {
+            req.flash('success', 'Bạn đã check in thành công lúc '+ date('{h}:{Minutes}{ampm} ngày {dd}/{mm}/{yyyy}', timeCheckin) + '. Nơi làm việc: ' + workPlace.toUpperCase())
             console.log('Check in thanh cong');
             res.render('user/index', {
                 props: result,
                 pageTitle: 'Staff - Check In',
                 path: '/',
-                timerIn: date('{h}:{Minutes}{ampm} ngày {dd}/{mm}/{yyyy}', timeCheckin),
-                workPlace: workPlace,
-                requiredIn: undefined,
-                timerOut: undefined,
-                requiredOut: undefined,
+                success: req.flash('success'),
+                error: undefined,
+                length: undefined,
                 checkInCard: true,
                 checkOutCard: undefined,
                 aLeaveCard: undefined,
@@ -211,28 +177,27 @@ exports.postCheckIn = (req, res, next) => {
                 checkoutList: undefined
               });
         })
-        .catch(err => console.log(err))
+        .catch(err => {
+            const error = new Error(err);
+            error.httpStatusCode = 500;
+            return next(error);
+        });
     } else {
-        User.findById(userId)
-        .then(result => {
-            console.log('Check in that bai');
-            res.render('user/index', {
-                props: result,
-                pageTitle: 'Staff - Check In',
-                path: '/',
-                timerIn: undefined,
-                workPlace: workPlace,
-                requiredIn: true,
-                timerOut: undefined,
-                requiredOut: undefined,
-                checkInCard: true,
-                checkOutCard: undefined,
-                aLeaveCard: undefined,
-                checkinList: undefined,
-                checkoutList: undefined
-              });
-        })
-        .catch(err => console.log(err))
+        req.flash('error', 'Check in không thành công. Vui lòng check out trước khi check in')
+        console.log('Check in that bai');
+        res.render('user/index', {
+            props: req.user,
+            pageTitle: 'Staff - Check In',
+            path: '/',
+            success: undefined,
+            error: req.flash('error'),
+            length: undefined,
+            checkInCard: true,
+            checkOutCard: undefined,
+            aLeaveCard: undefined,
+            checkinList: undefined,
+            checkoutList: undefined
+        });
     }
 
 };
@@ -240,8 +205,6 @@ exports.postCheckIn = (req, res, next) => {
 //render home page after post check out form
 exports.postCheckOut = (req, res, next) => {
     const userId = req.user._id;
-    console.log(userId);
-    const date = require('s-date');
     const timeCheckOut = new Date();
     //same logic check in post
     const checkRequest = (req.user.status[req.user.status.length - 1] === undefined) 
@@ -260,19 +223,18 @@ exports.postCheckOut = (req, res, next) => {
         })
         .then(result => {
             console.log('Check out thanh cong');
-            checkIn.find()
+            checkIn.find({userId: userId})
             .then(inArr => {
-                checkOut.find()
+                checkOut.find({userId: userId})
                 .then(outArr => {
+                    req.flash('success', 'Bạn đã check out thành công lúc ' + date('{h}:{Minutes}{ampm} ngày {dd}/{mm}/{yyyy}', timeCheckOut));
                     res.render('user/index', {
                         props: result,
                         pageTitle: 'Staff - Check Out',
                         path: '/',
-                        timerIn: undefined,
-                        workPlace: inArr.length,
-                        requiredIn: undefined,
-                        timerOut: date('{h}:{Minutes}{ampm} ngày {dd}/{mm}/{yyyy}', timeCheckOut),
-                        requiredOut: undefined,
+                        success: req.flash('success'),
+                        error: undefined,
+                        length: inArr.length,
                         checkInCard: undefined,
                         checkOutCard: true,
                         aLeaveCard: undefined,
@@ -280,33 +242,40 @@ exports.postCheckOut = (req, res, next) => {
                         checkoutList: outArr
                       });
                 })
-                .catch(err => console.log(err))
+                .catch(err => {
+                    const error = new Error(err);
+                    error.httpStatusCode = 500;
+                    return next(error);
+                });
             })
-            .catch(err => console.log(err))
+            .catch(err => {
+                const error = new Error(err);
+                error.httpStatusCode = 500;
+                return next(error);
+            });
         })
-        .catch(err => console.log(err))
+        .catch(err => {
+            const error = new Error(err);
+            error.httpStatusCode = 500;
+            return next(error);
+        });
     } else {
         //unexecute check-out
-        User.findById(userId)
-        .then(result => {
-            console.log('Check out that bai');
-            res.render('user/index', {
-                props: result,
-                pageTitle: 'Staff - Check Out',
-                path: '/',
-                timerIn: undefined,
-                workPlace: undefined,
-                requiredIn: undefined,
-                timerOut: undefined,
-                requiredOut: true,
-                checkInCard: undefined,
-                checkOutCard: true,
-                aLeaveCard: undefined,
-                checkinList: undefined,
-                checkoutList: undefined
-              });
-        })
-        .catch(err => console.log(err))
+        req.flash('error', 'Check out thất bại, vui lòng check in trước khi check out')
+        console.log('Check out that bai');
+        res.render('user/index', {
+            props: req.user,
+            pageTitle: 'Staff - Check Out',
+            path: '/',
+            success: undefined,
+            error: req.flash('error'),
+            length: undefined,
+            checkInCard: undefined,
+            checkOutCard: true,
+            aLeaveCard: undefined,
+            checkinList: undefined,
+            checkoutList: undefined
+            });
     }
 };
 
@@ -325,26 +294,36 @@ exports.postAnnualLeave = (req, res, next) => {
     //registration is only allowed when the annual leave remaining > 0
     if (aLremaining == 0) {
         //post failed
-        User.findById(userId)
-                .then(result => {
-                    console.log('that bai 1', leaveHours(startHours) ,leaveHours(endHours));
-                    res.render('user/index', {
-                        props: result,
-                        pageTitle: 'Staff - Annual Leave',
-                        path: '/',
-                        timerIn: undefined,
-                        workPlace: undefined,
-                        requiredIn: undefined,
-                        timerOut: undefined,
-                        requiredOut: true,
-                        checkInCard: undefined,
-                        checkOutCard: undefined,
-                        aLeaveCard: true,
-                        checkinList: undefined,
-                        checkoutList: undefined
-                    });
-                })
-                .catch(err => console.log(err))
+        req.flash('error', 'Số ngày phép còn lại không đủ. Vui lòng liên hệ quản lý');
+        console.log('that bai', leaveHours(startHours) ,leaveHours(endHours));
+        res.render('user/index', {
+            props: req.user,
+            pageTitle: 'Staff - Annual Leave',
+            path: '/',
+            success: undefined,
+            error: req.flash('error'),
+            length: undefined,
+            checkInCard: undefined,
+            checkOutCard: undefined,
+            aLeaveCard: true,
+            checkinList: undefined,
+            checkoutList: undefined
+        })
+    } else if (startHours == ''|| endDate == '') {
+        req.flash('error', 'Đăng ký thất bại, vui lòng nhập giờ bắt đầu và giờ kết thúc');
+        res.render('user/index', {
+            props: req.user,
+            pageTitle: 'Staff - Annual Leave',
+            path: '/',
+            success: undefined,
+            error: req.flash('error'),
+            length: undefined,
+            checkInCard: undefined,
+            checkOutCard: undefined,
+            aLeaveCard: true,
+            checkinList: undefined,
+            checkoutList: undefined
+          });
     } else // check registration conditions by date
     if (endDate.getDate() == startDate.getDate() // case 1: end date request = start date request
     && endDate.getMonth() == startDate.getMonth() 
@@ -353,26 +332,20 @@ exports.postAnnualLeave = (req, res, next) => {
         || leaveHours(startShift) > leaveHours(startHours) // failed if post wrong logic, start hours < end hours
         || leaveHours(endShift) < leaveHours(endHours)
         || timeRemaining(aLremaining, timeUsed(startHours, endHours), 0, 0) < 0){
-            User.findById(userId)
-                .then(result => {
-                    console.log('that bai 1', leaveHours(startHours) ,leaveHours(endHours));
-                    res.render('user/index', {
-                        props: result,
-                        pageTitle: 'Staff - Annual Leave',
-                        path: '/',
-                        timerIn: undefined,
-                        workPlace: undefined,
-                        requiredIn: undefined,
-                        timerOut: undefined,
-                        requiredOut: true,
-                        checkInCard: undefined,
-                        checkOutCard: undefined,
-                        aLeaveCard: true,
-                        checkinList: undefined,
-                        checkoutList: undefined
-                    });
-                })
-                .catch(err => console.log(err))
+            req.flash('error', 'Thời gian đăng ký không đúng, vui lòng kiểm tra lại');
+            res.render('user/index', {
+                props: req.user,
+                pageTitle: 'Staff - Annual Leave',
+                path: '/',
+                success: undefined,
+                error: req.flash('error'),
+                length: undefined,
+                checkInCard: undefined,
+                checkOutCard: undefined,
+                aLeaveCard: true,
+                checkinList: undefined,
+                checkoutList: undefined
+            });
         } else { // post success 
             const annualLeave = new AnnualLeave({
                 userId: userId,
@@ -384,6 +357,7 @@ exports.postAnnualLeave = (req, res, next) => {
             });
         
             annualLeave.save(); //save to database
+            req.flash('success', 'Đăng ký thành công');
 
             User.findById(userId)
             .then(user => {
@@ -396,11 +370,9 @@ exports.postAnnualLeave = (req, res, next) => {
                     props: result,
                     pageTitle: 'Staff - Annual Leave',
                     path: '/',
-                    timerIn: undefined,
-                    workPlace: undefined,
-                    requiredIn: undefined,
-                    timerOut: true,
-                    requiredOut: undefined,
+                    success: req.flash('success'),
+                    error: undefined,
+                    length: undefined,
                     checkInCard: undefined,
                     checkOutCard: undefined,
                     aLeaveCard: true,
@@ -408,29 +380,28 @@ exports.postAnnualLeave = (req, res, next) => {
                     checkoutList: undefined
                 });
             })
-            .catch(err => console.log(err))
+            .catch(err => {
+                const error = new Error(err);
+                error.httpStatusCode = 500;
+                return next(error);
+            });
         }
     } else if (endDate > startDate) { //check with case end date post > start date post
         if (timeRemaining(aLremaining, timeUsed(startHours, endShift), timeUsed(startShift, endHours), ((endDate - startDate)/86400000 - 1)) < 0) {
-            User.findById(userId) //post failed because total annual remaining < post request
-            .then(result => {
-                res.render('user/index', {
-                    props: result,
-                    pageTitle: 'Staff - Annual Leave',
-                    path: '/',
-                    timerIn: undefined,
-                    workPlace: undefined,
-                    requiredIn: undefined,
-                    timerOut: undefined,
-                    requiredOut: true,
-                    checkInCard: undefined,
-                    checkOutCard: undefined,
-                    aLeaveCard: true,
-                    checkinList: undefined,
-                    checkoutList: undefined
-                  });
-            })
-            .catch(err => console.log(err))
+            req.flash('error', 'Số ngày phép còn lại không đủ. Vui lòng liên hệ quản lý');
+            res.render('user/index', {//post failed because total annual remaining < post request
+                props: req.user,
+                pageTitle: 'Staff - Annual Leave',
+                path: '/',
+                success: undefined,
+                error: req.flash('error'),
+                length: undefined,
+                checkInCard: undefined,
+                checkOutCard: undefined,
+                aLeaveCard: true,
+                checkinList: undefined,
+                checkoutList: undefined
+              });
         } else { //post success
             const annualLeave = new AnnualLeave({
                 userId: userId,
@@ -450,15 +421,14 @@ exports.postAnnualLeave = (req, res, next) => {
                 return user.save()
             })
             .then(result => {
+                req.flash('success', 'Đăng ký thành công');
                 res.render('user/index', {
                     props: result,
                     pageTitle: 'Staff - Annual Leave',
                     path: '/',
-                    timerIn: undefined,
-                    workPlace: undefined,
-                    requiredIn: undefined,
-                    timerOut: true,
-                    requiredOut: undefined,
+                    success: req.flash('success'),
+                    error: undefined,
+                    length: undefined,
                     checkInCard: undefined,
                     checkOutCard: undefined,
                     aLeaveCard: true,
@@ -466,99 +436,163 @@ exports.postAnnualLeave = (req, res, next) => {
                     checkoutList: undefined
                 });
             })
-            .catch(err => console.log(err))
+            .catch(err => {
+                const error = new Error(err);
+                error.httpStatusCode = 500;
+                return next(error);
+            });
         }
     } else { //post failed with other case
-        User.findById(userId)
-        .then(result => {
-            res.render('user/index', {
-                props: result,
-                pageTitle: 'Staff - Annual Leave',
-                path: '/',
-                timerIn: undefined,
-                workPlace: undefined,
-                requiredIn: undefined,
-                timerOut: undefined,
-                requiredOut: true,
-                checkInCard: undefined,
-                checkOutCard: undefined,
-                aLeaveCard: true,
-                checkinList: undefined,
-                checkoutList: undefined
-              });
-        })
-        .catch(err => console.log(err))
-    }
-
-    
+        req.flash('error', 'Đăng ký thất bại, vui lòng kiểm tra lại thông tin');
+        res.render('user/index', {
+            props: req.user,
+            pageTitle: 'Staff - Annual Leave',
+            path: '/',
+            success: undefined,
+            error: req.flash('error'),
+            length: undefined,
+            checkInCard: undefined,
+            checkOutCard: undefined,
+            aLeaveCard: true,
+            checkinList: undefined,
+            checkoutList: undefined
+          });
+    };
 };
 
 //re-render Staff infomation page after change image url
 exports.postChangeImageUrl = (req, res, next) => {
     const userId = req.user._id;
-    const newUrl = req.body.newUrl;
+    const newImage = req.file;
+    const imageUrl = 'images/' + newImage.filename;
 
-    User.findById(userId)
-    .then(user => {
-        user.image = newUrl
-        return user.save() //save to database
-    })
-    .then(result => {
-        res.redirect('/staff-info')
-    })
-    .catch(err => console.log(err))
+    if (!newImage) {
+        res.status(422).render('user/user-info', {
+            props: req.user,
+            birth: date('{mm}/{dd}/{yyyy}', new Date(req.user.doB)),//use s-date to format time for render view
+            startD: date('{mm}/{dd}/{yyyy}', new Date(req.user.startDate)),
+            pageTitle: 'User Infomation',
+            path: '/staff-info',
+            errorMessage: 'Attach file is not an image!'
+        });
+    } else {
+        User.findById(userId)
+        .then(user => {
+            user.image = imageUrl;
+            return user.save() //save to database
+        })
+        .then(result => {
+            res.redirect('/staff-info')
+        })
+        .catch(err => {
+            const error = new Error(err);
+            error.httpStatusCode = 500;
+            return next(error);
+        });    
+    }
 };
 
 //render time checking page, because it is a summary page, so need to import a lot of data from models folder
 exports.getTimeChecking = (req, res, next) => {
+    const page = +req.query.page || 1;
+    const item_per_page = 10;
+    let totalItemCheckin;
+
     const userId =req.user._id;
     const status = req.user.status[req.user.status.length - 1].status;
     User.findById(userId)
     .then(user => {
-        checkIn.find()
+        checkIn.find({userId: userId})
+        .countDocuments()
+        .then(numCheckIns => {
+            totalItemCheckin = numCheckIns;
+            return checkIn.find({userId: userId})
+            .skip((page - 1)*item_per_page)
+            .limit(item_per_page)
+        })
         .then(checkIns => {
-            checkOut.find()
+            checkOut.find({userId: userId})
             .then(checkOuts => {
-                AnnualLeave.find()
+                AnnualLeave.find({userId: userId})
                 .then(aLeave => {
                     const checkOutlist = (status) ? checkOuts.push({time: 'Đang làm việc'}) : checkOuts;
-                
-                    res.render('user/searchInfo', {
-                        props: user,
-                        pageTitle: 'Time Checking',
-                        path: '/time-checking',
-                        length: checkIns.length,
-                        checkinList: checkIns,
-                        checkoutList: checkOuts,
-                        annualLeave: aLeave,
-                        salary: undefined,
-                        month: undefined
+                    User.find({department: req.user.department, isManager: true})
+                    .then(manager => {
+                        res.render('user/searchInfo', {
+                            props: user,
+                            pageTitle: 'Time Checking',
+                            path: '/time-checking',
+                            length: checkIns.length,
+                            checkinList: checkIns,
+                            checkoutList: checkOuts,
+                            annualLeave: aLeave,
+                            salary: undefined,
+                            month: undefined,
+                            manager: manager[0].name,
+                            currentPage: page,
+                            hasNextPage: item_per_page * page < totalItemCheckin,
+                            hasPreviousPage: page > 1,
+                            nextPage: page + 1,
+                            previousPage: page -1,
+                            lastPage: Math.ceil(totalItemCheckin / item_per_page)
+                        });
+                    })
+                    .catch(err => {
+                        const error = new Error(err);
+                        error.httpStatusCode = 500;
+                        return next(error);
                     });
                 })
-                .catch(err => console.log(err));
-                
+                .catch(err => {
+                    const error = new Error(err);
+                    error.httpStatusCode = 500;
+                    return next(error);
+                });
             })
-            .catch(err => console.log(err));
+            .catch(err => {
+                const error = new Error(err);
+                error.httpStatusCode = 500;
+                return next(error);
+            });
         })
-        .catch(err => console.log(err));
+        .catch(err => {
+            const error = new Error(err);
+            error.httpStatusCode = 500;
+            return next(error);
+        });
     })
-    .catch(err => console.log(err));
+    .catch(err => {
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
+    });
 };
 
 //render time checking page affer choose month 
 exports.postTimeChecking = (req, res, next) => {
-    const userId =req.user._id;
+    const userId = req.user._id;
     const status = req.user.status[req.user.status.length - 1].status;
     const salaryScale = req.user.salaryScale;
     const time = req.body.time;
 
+    const page = +req.query.page || 1;
+    const item_per_page = 10;
+    let totalItemCheckin;
+
     User.findById(userId)
     .then(user => {
-        checkIn.find()
+        checkIn.find({userId: userId})
+        .countDocuments()
+        .then(numCheckIns => {
+            totalItemCheckin = numCheckIns;
+            return checkIn.find({userId: userId})
+            .skip((page - 1)*item_per_page)
+            .limit(item_per_page)
+        })
         .then(checkIns => {
-            checkOut.find()
+            checkOut.find({userId: userId})
             .then(checkOuts => {
-                AnnualLeave.find()
+                AnnualLeave.find({userId: userId})
                 .then(aLeave => {
                     let totalLostTime = 0;
                     let totalTime = 0;
@@ -610,44 +644,147 @@ exports.postTimeChecking = (req, res, next) => {
                     const checkOutlist = (status) ? checkOuts.push({time: 'Đang làm việc'}) : checkOuts; 
                     
                     const totalSalary = (salaryScale*3000000 + (totalLostTime + totalTimeLeave/8)*200000).toFixed(2); //calculate total salary of month
-                
-                    res.render('user/searchInfo', {
-                        props: user,
-                        pageTitle: 'Time Checking',
-                        path: '/time-checking',
-                        length: checkIns.length,
-                        checkinList: checkIns,
-                        checkoutList: checkOuts,
-                        annualLeave: aLeave,
-                        salary: numberFormat.format(totalSalary),
-                        month: getNewMonth(time) + 1
+                    
+                    User.find({department: req.user.department, isManager: true})
+                    .then(manager => {
+                        res.render('user/searchInfo', {
+                            props: user,
+                            pageTitle: 'Time Checking',
+                            path: '/time-checking',
+                            length: checkIns.length,
+                            checkinList: checkIns,
+                            checkoutList: checkOuts,
+                            annualLeave: aLeave,
+                            salary: numberFormat.format(totalSalary),
+                            month: getNewMonth(time) + 1,
+                            manager: manager[0].name,
+                            currentPage: page,
+                            hasNextPage: item_per_page * page < totalItemCheckin,
+                            hasPreviousPage: page > 1,
+                            nextPage: page + 1,
+                            previousPage: page -1,
+                            lastPage: Math.ceil(totalItemCheckin / item_per_page)
+                        });
+                    })
+                    .catch(err => {
+                        const error = new Error(err);
+                        error.httpStatusCode = 500;
+                        return next(error);
                     });
                 })
-                .catch(err => console.log(err));
+                .catch(err => {
+                    const error = new Error(err);
+                    error.httpStatusCode = 500;
+                    return next(error);
+                });
             })
-            .catch(err => console.log(err));
+            .catch(err => {
+                const error = new Error(err);
+                error.httpStatusCode = 500;
+                return next(error);
+            });
         })
-        .catch(err => console.log(err));
+        .catch(err => {
+            const error = new Error(err);
+            error.httpStatusCode = 500;
+            return next(error);
+        });
     })
-    .catch(err => console.log(err));
+    .catch(err => {
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
+    });
 };
+
+exports.postNumberofLine = (req, res, next) => {
+    const page = +req.query.page || 1;
+    const item_per_page = req.body.numberofLine;
+    let totalItemCheckin;
+
+    console.log(page)
+
+    const userId =req.user._id;
+    const status = req.user.status[req.user.status.length - 1].status;
+    User.findById(userId)
+    .then(user => {
+        checkIn.find({userId: userId})
+        .countDocuments()
+        .then(numCheckIns => {
+            totalItemCheckin = numCheckIns;
+            return checkIn.find({userId: userId})
+            .skip((page - 1)*item_per_page)
+            .limit(item_per_page)
+        })
+        .then(checkIns => {
+            checkOut.find({userId: userId})
+            .then(checkOuts => {
+                AnnualLeave.find({userId: userId})
+                .then(aLeave => {
+                    const checkOutlist = (status) ? checkOuts.push({time: 'Đang làm việc'}) : checkOuts;
+                    User.find({department: req.user.department, isManager: true})
+                    .then(manager => {
+                        res.render('user/searchInfo', {
+                            props: user,
+                            pageTitle: 'Time Checking',
+                            path: '/time-checking',
+                            length: checkIns.length,
+                            checkinList: checkIns,
+                            checkoutList: checkOuts,
+                            annualLeave: aLeave,
+                            salary: undefined,
+                            month: undefined,
+                            manager: manager[0].name,
+                            currentPage: page,
+                            hasNextPage: item_per_page * page < totalItemCheckin,
+                            hasPreviousPage: page > 1,
+                            nextPage: page + 1,
+                            previousPage: page -1,
+                            lastPage: Math.ceil(totalItemCheckin / item_per_page)
+                        });
+                    })
+                    .catch(err => {
+                        const error = new Error(err);
+                        error.httpStatusCode = 500;
+                        return next(error);
+                    });
+                })
+                .catch(err => {
+                    const error = new Error(err);
+                    error.httpStatusCode = 500;
+                    return next(error);
+                });
+            })
+            .catch(err => {
+                const error = new Error(err);
+                error.httpStatusCode = 500;
+                return next(error);
+            });
+        })
+        .catch(err => {
+            const error = new Error(err);
+            error.httpStatusCode = 500;
+            return next(error);
+        });
+    })
+    .catch(err => {
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
+    });
+}
 
 //render covid check page
 exports.getCovidCheck = (req, res, next) => {
-    const userId = req.user._id;
-
-    User.findById(userId)
-    .then(user => {
-        res.render('user/covidCheck', {
-            props: user,
-            pageTitle: 'Staff - Covid Check',
-            path: '/covid-check',
-            temper: undefined,
-            vaccine: undefined, 
-            sick: undefined,
-        })
+    res.render('user/covidCheck', {
+        props: req.user,
+        pageTitle: 'Staff - Covid Check',
+        path: '/covid-check',
+        temper: undefined,
+        vaccine: undefined, 
+        sick: undefined,
+        propsLength: undefined
     })
-    .catch(err => console.log(err))
 };
 
 // render covid check page after post temperature
@@ -659,7 +796,7 @@ exports.postTemperature = (req, res, next) => {
     User.findById(userId)
     .then(user => {
         const temperature = new Temperature({
-            userId: ObjectId(userId),
+            userId: userId,
             time: timeSubmit,
             temperature: temper
         });
@@ -673,9 +810,14 @@ exports.postTemperature = (req, res, next) => {
             temper: temper,
             vaccine: true,
             sick: undefined,
+            propsLength: undefined
         });
     })
-    .catch(err => console.log(err))
+    .catch(err => {
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
+    });
 };
 
 // render covid check page after post vaccinated
@@ -698,9 +840,14 @@ exports.postvaccinated = (req, res, next) => {
             temper: undefined,
             vaccine: true,
             sick: undefined,
+            propsLength: undefined
         });
     })
-    .catch(err => console.log(err))
+    .catch(err => {
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
+    });
 };
 
 // render covid check page after post sick checked
@@ -711,7 +858,6 @@ exports.postSickChecked = (req, res, next) => {
     User.findById(userId)
     .then(user => {
         user.covidCheck = sick;
-        console.log(user)
         return user.save() //save to database
     })
     .then(result => {
@@ -722,7 +868,278 @@ exports.postSickChecked = (req, res, next) => {
             temper: undefined,
             vaccine: true,
             sick: true,
+            propsLength: undefined
         });
     })
-    .catch(err => console.log(err))
+    .catch(err => {
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
+    });
 };
+
+exports.getCovitCheckManager = (req, res, next) => {
+    User.find({department: req.user.department, isManager: false})
+    .then(users => {
+        res.render('user/covidCheck', {
+            props: users,
+            pageTitle: 'Manager - Covid Check',
+            path: '/covid-check',
+            temper: undefined,
+            vaccine: undefined, 
+            sick: undefined,
+            propsLength: users.length
+        })
+    })
+    .catch(err => {
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
+    });
+};
+
+exports.getExportFile = (req, res, next) => {
+    const fileName = 'covid-staff-infomation.pdf';
+    const covidFilePath = path.join('data', 'covidFile', fileName);
+    const pdfDoc = new PDFDocument({ margin: 30, size: 'A4' });
+    User.find({department: req.user.department, isManager: false})
+    .then(users => {
+        if (users.length == 0) {
+            return next();
+        } else {
+            const table = {
+                title: 'THONG TIN COVID CUA NHAN VIEN',
+                headers: ['Name', 'Count', 'Vaccine Name', 'Vaccinated Date', 'Status'],
+                rows: [],
+            }
+            for (let i = 0; i < users.length; i++) {
+                for (let j = 0; j < users[i].vaccinated.length; j++) {
+                    table.rows.push([
+                        users[i].name, 
+                        users[i].vaccinated[j].count, 
+                        users[i].vaccinated[j].vaccinateName, 
+                        getNewDate(users[i].vaccinated[j].time).getDate() + '-' + getNewMonth(users[i].vaccinated[j].time) + 1 + '-' + getNewYear(users[i].vaccinated[j].time),
+                        (users[i].covidCheck ? 'infected with covid' : 'not infected with covid'),
+                    ])
+                }
+            }
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', 'attach; filename="' + fileName + '"');
+            pdfDoc.pipe(fs.createWriteStream(covidFilePath));
+            pdfDoc.pipe(res);
+
+            ;(async function() {
+                table;
+                await pdfDoc.table(table, {
+                    prepareHeader: () => pdfDoc.font("Helvetica-Bold").fontSize(13),
+                    prepareRow: (row, indexColumn, indexRow, rectRow, rectCell) => {
+                        pdfDoc.font("Helvetica").fontSize(8);
+                        indexColumn === 0 && pdfDoc.addBackground(rectRow, 'blue', 0.15)
+                    }
+                });
+                pdfDoc.end();
+            })();
+        }
+    })
+    .catch(err => {
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
+    });
+};
+
+exports.getWorkConfirmation = (req, res, next) => {
+    User.find({department: req.user.department, isManager: false})
+    .then(users => {
+        res.render('user/workConfirmation', {
+            props: users,
+            pageTitle: 'Work Confirmation',
+            path: '/work-confirmation',
+            propsLength: users.length,
+        })
+    })
+    .catch(err => {
+        console.log(err);
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
+    });
+};
+
+exports.getStaffInfomation = (req, res, next) => {
+    const userId = req.params.staffId;
+
+    User.findById(userId)
+    .then(user => {
+        checkIn.find({userId : mongoose.Types.ObjectId(userId)})
+        .then(checkIns => {
+            checkOut.find({userId : mongoose.Types.ObjectId(userId)})
+            .then(checkOuts => {
+                console.log(checkOuts)
+                AnnualLeave.find({userId : mongoose.Types.ObjectId(userId)})
+                .then(aLeave => {
+                    const status = user.status[user.status.length - 1].status;
+                    const checkOutlist = (status) ? checkOuts.push({time: 'Đang làm việc'}) : checkOuts;
+                        res.render('user/staff-infomaion', {
+                            props: user,
+                            pageTitle: user.name + ' Info',
+                            path: '/time-checking',
+                            length: checkIns.length,
+                            checkinList: checkIns,
+                            checkoutList: checkOuts,
+                            annualLeave: aLeave,
+                            salary: undefined,
+                            month: undefined
+                        });
+                })
+                .catch(err => {
+                    const error = new Error(err);
+                    error.httpStatusCode = 500;
+                    return next(error);
+                });
+            })
+            .catch(err => {
+                const error = new Error(err);
+                error.httpStatusCode = 500;
+                return next(error);
+            });
+        })
+        .catch(err => {
+            const error = new Error(err);
+            error.httpStatusCode = 500;
+            return next(error);
+        });
+    })
+    .catch(err => {
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
+    });
+};
+
+exports.postDeleteTime = (req, res, next) => {
+    const userId = req.body.staffId;
+    const checkInId = req.body.checkIn;
+    const checkOutId = req.body.checkOut;
+
+    checkIn.findById(checkInId)
+    .then(checkin => {
+        console.log(checkin);
+        return checkIn.deleteOne({_id: checkInId, userId: mongoose.Types.ObjectId(userId)});
+    })
+    .catch(err => {
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
+    });
+
+    checkOut.findById(checkOutId)
+    .then(checkout => {
+        console.log(checkout);
+        return checkOut.deleteOne({_id: checkOutId, userId: mongoose.Types.ObjectId(userId)});
+    })
+    .catch(err => {
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
+    });
+
+    console.log(userId, checkInId, checkOutId);
+
+    User.findById(userId)
+    .then(user => {
+        checkIn.find({userId : mongoose.Types.ObjectId(userId)})
+        .then(checkIns => {
+            checkOut.find({userId : mongoose.Types.ObjectId(userId)})
+            .then(checkOuts => {
+                AnnualLeave.find({userId : mongoose.Types.ObjectId(userId)})
+                .then(aLeave => {
+                    const status = user.status[user.status.length - 1].status;
+                    const checkOutlist = (status) ? checkOuts.push({time: 'Đang làm việc'}) : checkOuts;
+                        res.render('user/staff-infomaion', {
+                            props: user,
+                            pageTitle: user.name + ' Info',
+                            path: '/time-checking',
+                            length: checkIns.length,
+                            checkinList: checkIns,
+                            checkoutList: checkOuts,
+                            annualLeave: aLeave,
+                            salary: undefined,
+                            month: undefined
+                        });
+                })
+                .catch(err => {
+                    const error = new Error(err);
+                    error.httpStatusCode = 500;
+                    return next(error);
+                });
+            })
+            .catch(err => {
+                const error = new Error(err);
+                error.httpStatusCode = 500;
+                return next(error);
+            });
+        })
+        .catch(err => {
+            const error = new Error(err);
+            error.httpStatusCode = 500;
+            return next(error);
+        });
+    })
+    .catch(err => {
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
+    });
+};
+
+exports.posMonthTime = (req, res, next) => {
+    const userId = req.body.staffId;
+    const monthTime = getNewDate(req.body.time);
+
+    User.findById(userId)
+    .then(user => {
+        checkIn.find({userId : mongoose.Types.ObjectId(userId)})
+        .then(checkIns => {
+            checkOut.find({userId : mongoose.Types.ObjectId(userId)})
+            .then(checkOuts => {
+                AnnualLeave.find({userId : mongoose.Types.ObjectId(userId)})
+                .then(aLeave => {
+                    const status = user.status[user.status.length - 1].status;
+                    const checkOutlist = (status) ? checkOuts.push({time: 'Đang làm việc'}) : checkOuts;
+                        res.render('user/staff-infomaion', {
+                            props: user,
+                            pageTitle: user.name + ' Info',
+                            path: '/time-checking',
+                            length: checkIns.length,
+                            checkinList: checkIns,
+                            checkoutList: checkOuts,
+                            annualLeave: aLeave,
+                            salary: getNewYear(monthTime),
+                            month: getNewMonth(monthTime)
+                        });
+                })
+                .catch(err => {
+                    const error = new Error(err);
+                    error.httpStatusCode = 500;
+                    return next(error);
+                });
+            })
+            .catch(err => {
+                const error = new Error(err);
+                error.httpStatusCode = 500;
+                return next(error);
+            });
+        })
+        .catch(err => {
+            const error = new Error(err);
+            error.httpStatusCode = 500;
+            return next(error);
+        });
+    })
+    .catch(err => {
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
+    });
+}
