@@ -92,7 +92,9 @@ mongoose
     MONGODB_URI
   )
   .then(result => {
-    app.listen(3000);
+    app.listen(process.env.PORT || 8000, '0.0.0.0', () => {
+      console.log('Server is running.');
+    });
   })
   .catch(err => {
     console.log(err);
